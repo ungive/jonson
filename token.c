@@ -49,7 +49,7 @@ static size_t json_number_size(const char *str, size_t size)
 	const char *exponent = NULL;
 	const char *decimal_point = NULL;
 
-	for (; (unsigned)(current - str) < size; ++current) {
+	for (; (size_t)(current - str) < size; ++current) {
 		if (*current >= '0' && *current <= '9')
 			continue;
 		if (!exponent && (*current == TOKEN_EXP_LOWER ||
@@ -83,7 +83,7 @@ int json_next_token(struct json_token *token)
 	const char *current = start;
 
 	do {
-		if ((unsigned)(current - token->json) >= token->json_size) {
+		if ((size_t)(current - token->json) >= token->json_size) {
 			token->type = JSON_TOKEN_END;
 			token->size = 1;
 			goto success;
@@ -161,11 +161,11 @@ int json_next_token(struct json_token *token)
 			token->type = JSON_TOKEN_STRING;
 
 			const char *str_start = ++current;
-			while ((unsigned)(current - token->json) < token->json_size &&
+			while ((size_t)(current - token->json) < token->json_size &&
 					(*current != '"' || *(current - 1) == '\\'))
 				++current;
 
-			if ((unsigned)(current - token->json) >= token->json_size) {
+			if ((size_t)(current - token->json) >= token->json_size) {
 				++token->position;
 				if (str_start == current)
 					goto unexpected_end_of_input;

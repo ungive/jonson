@@ -5,7 +5,6 @@
  */
 
 #include <stdlib.h>
-#include <stddef.h>
 
 #include "jonson.h"
 #include "array.h"

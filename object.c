@@ -4,10 +4,7 @@
  * it under the terms of the MIT license. See LICENSE for details.
  */
 
-#include <stddef.h>
-#include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "jonson.h"
 #include "object.h"

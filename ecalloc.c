@@ -4,7 +4,6 @@
  * it under the terms of the MIT license. See LICENSE for details.
  */
 
-#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 

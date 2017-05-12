@@ -7,9 +7,6 @@
 #ifndef JONSON_OBJECT_H
 #define JONSON_OBJECT_H
 
-#include <stddef.h>
-#include <stdint.h>
-
 #include "jonson.h"
 #include "ecalloc.h"
 

@@ -7,7 +7,6 @@
 #ifndef JONSON_H
 #define JONSON_H
 
-#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 

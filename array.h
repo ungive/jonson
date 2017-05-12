@@ -7,8 +7,6 @@
 #ifndef JONSON_ARRAY_H
 #define JONSON_ARRAY_H
 
-#include <stddef.h>
-
 #include "jonson.h"
 
 struct json_array {

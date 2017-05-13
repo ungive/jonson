@@ -10,80 +10,70 @@
 #include "jonson.h"
 #include "array.h"
 
-struct json json_array_new(void)
+struct json_array *json_array_new(void)
 {
-	return JSON_ARR(ecalloc(1, sizeof(struct json_array)));
+	struct json_array *array = ecalloc(1, sizeof(struct json_array));
+	return array;
 }
 
-void json_array_free(struct json array)
+void json_array_free(struct json_array *array)
 {
-	struct json_array *arr = JSON_ARRVAL(array);
-
-	if (arr->data) {
+	if (array->data) {
 		size_t i;
-		for (i = 0; i < arr->size; ++i)
-			json_free(arr->data[i]);
+		for (i = 0; i < array->size; ++i)
+			json_free(array->data[i]);
 	}
 
-	free(arr->data);
-	free(arr);
+	free(array->data);
+	free(array);
 }
 
-void json_array_reserve(struct json array, size_t size)
+void json_array_reserve(struct json_array *array, size_t size)
 {
-	struct json_array *arr = JSON_ARRVAL(array);
-
-	if (size <= arr->capacity)
+	if (size <= array->capacity)
 		return;
 
 	struct json *data = ecalloc(size, sizeof(struct json));
 
-	if (arr->data) {
+	if (array->data) {
 		size_t i;
-		for (i = 0; i < arr->capacity; ++i)
-			data[i] = arr->data[i];
+		for (i = 0; i < array->capacity; ++i)
+			data[i] = array->data[i];
 	}
-	free(arr->data);
+	free(array->data);
 
-	arr->data = data;
-	arr->capacity = size;
+	array->data = data;
+	array->capacity = size;
 }
 
-void json_array_resize(struct json array, size_t size)
+void json_array_resize(struct json_array *array, size_t size)
 {
-	struct json_array *arr = JSON_ARRVAL(array);
-
-	if (size >= arr->size)
+	if (size >= array->size)
 		json_array_reserve(array, size);
 	else {
 		size_t i;
-		struct json *end = arr->data + size;
+		struct json *end = array->data + size;
 		for (i = 0; i < size; ++i)
 			json_free(end[i]);
-		memset(end, 0, arr->size - size);
-		arr->size = size;
+		memset(end, 0, array->size - size);
+		array->size = size;
 	}
 }
 
-void json_array_add(struct json array, struct json value)
+void json_array_add(struct json_array *array, struct json value)
 {
-	struct json_array *arr = JSON_ARRVAL(array);
-
-	if (arr->size >= arr->capacity) {
-		size_t size = arr->capacity ?
-			(arr->capacity << 1) : JSON_ARRAY_INITIAL_CAPACITY;
+	if (array->size >= array->capacity) {
+		size_t size = array->capacity ?
+			(array->capacity << 1) : JSON_ARRAY_INITIAL_CAPACITY;
 		json_array_reserve(array, size);
 	}
 
-	arr->data[arr->size++] = value;
+	array->data[array->size++] = value;
 }
 
-struct json json_array_get(struct json array, size_t index)
+struct json json_array_get(struct json_array *array, size_t index)
 {
-	struct json_array *arr = JSON_ARRVAL(array);
-
-	if (index >= arr->size)
+	if (index >= array->size)
 		return JSON_NONE;
-
-	return arr->data[index];
+	return array->data[index];
 }

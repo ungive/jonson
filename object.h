@@ -43,12 +43,6 @@ struct json_object *json_object_new(void);
 
 void json_object_free(struct json_object *object);
 
-static inline void json_object_set_load_factor(struct json_object *object,
-					       float load_factor)
-{
-	object->load_factor = load_factor;
-}
-
 /*
  * Reserves space to fit at least 'size' elements into a [struct json_object].
  * Resizing involves reallocation of almost the entire object. Use with care.

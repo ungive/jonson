@@ -5,6 +5,8 @@ CFLAGS  = -std=c99 -pedantic -Wall -Wextra -Werror -Wno-unused-parameter \
 
 ifdef VALGRIND
 CFLAGS += -g -O0
+else
+CFLAGS += -O3
 endif
 
 OUTDIR  = ../

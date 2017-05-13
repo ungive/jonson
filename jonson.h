@@ -69,7 +69,7 @@ signed long long json_parsen(const char *json, size_t size, struct json *out);
 
 signed long long json_parsen2(const char *json, size_t size, struct json *out);
 
-static inline char *json_strdupn(const char *str, size_t size)
+static inline char *json_strndup(const char *str, size_t size)
 {
 	char *copy = ecalloc(size + 1, sizeof(char));
 	return memcpy(copy, str, size * sizeof(char));
@@ -80,7 +80,7 @@ static inline char *json_strdupn(const char *str, size_t size)
  */
 #define JSON_STRN(data, size) \
 	((struct json){ .type = JSON_TYPE_STRING, \
-		   .value.string = json_strdupn(data, size) })
+		   .value.string = json_strndup(data, size) })
 #define JSON_STR(data) JSON_STRN(data, (data) ? strlen(data) : 0)
 #define JSON_NUM(data) ((struct json){ .type = JSON_TYPE_NUMBER, .value.number = data })
 #define JSON_BOOL(data) ((struct json){ .type = JSON_TYPE_BOOLEAN, .value.boolean = data })

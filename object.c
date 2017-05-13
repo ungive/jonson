@@ -100,7 +100,7 @@ void json_object_setn(struct json_object *object, const char *key,
 
 	/* Create a new bucket and fill it with the passed key and value. */
 	struct json_bucket *bucket = ecalloc(1, sizeof(struct json_bucket));
-	bucket->key = json_strdupn(key, key_size);
+	bucket->key = json_strndup(key, key_size);
 	bucket->value = value;
 
 	/* Set this bucket's next bucket to the bucket

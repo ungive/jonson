@@ -22,13 +22,14 @@ struct json json_build(JSON_TYPE type, ...)
 	va_start(args, type);
 
 	if (type == JSON_TYPE_OBJECT) {
-		result = json_object_new();
+		struct json_object *object = json_object_new();
 		while (1) {
 			struct json_bucket bucket = va_arg(args, struct json_bucket);
 			if (bucket.value.type == JSON_TYPE_NONE)
 				break;
-			json_object_set(result, bucket.key, bucket.value);
+			json_object_set(object, bucket.key, bucket.value);
 		}
+		result = JSON_OBJ(object);
 	}
 	else {
 		result = json_array_new();
@@ -48,8 +49,8 @@ void json_free(struct json value)
 {
 	switch (value.type) {
 	case JSON_TYPE_STRING: free(JSON_STRVAL(value)); return;
-	case JSON_TYPE_OBJECT: json_object_free(value);  return;
-	case JSON_TYPE_ARRAY:  json_array_free(value);   return;
+	case JSON_TYPE_OBJECT: json_object_free(JSON_OBJVAL(value)); return;
+	case JSON_TYPE_ARRAY:  json_array_free(value); return;
 	default: return;
 	}
 }
@@ -237,7 +238,7 @@ signed long long json_parsen(const char *json, size_t size, struct json *out)
 				goto unexpected_token;
 			continue;
 		case JSON_TOKEN_BEGIN_OBJECT:
-			json_stack_push(&stack, json_object_new());
+			json_stack_push(&stack, JSON_OBJ(json_object_new()));
 			continue;
 		case JSON_TOKEN_BEGIN_ARRAY:
 			json_stack_push(&stack, json_array_new());
@@ -257,7 +258,8 @@ signed long long json_parsen(const char *json, size_t size, struct json *out)
 					stack->next->next->data.type == JSON_TYPE_OBJECT) {
 				struct json value = json_stack_pop(&stack);
 				struct json key = json_stack_pop(&stack);
-				json_object_set(stack->data, JSON_STRVAL(key), value);
+				json_object_set(JSON_OBJVAL(stack->data),
+					JSON_STRVAL(key), value);
 				free(JSON_STRVAL(key));
 			}
 			if (!stack || (stack->data.type != JSON_TYPE_OBJECT &&

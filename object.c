@@ -20,18 +20,16 @@ uint32_t json_hashn(const char *str, size_t size)
 	return hash;
 }
 
-struct json json_object_new(void)
+struct json_object *json_object_new(void)
 {
 	struct json_object *object = ecalloc(1, sizeof(struct json_object));
 	object->load_factor = JSON_OBJECT_INITIAL_LOAD_FACTOR;
-	return JSON_OBJ(object);
+	return object;
 }
 
-void json_object_free(struct json object)
+void json_object_free(struct json_object *object)
 {
-	struct json_object *obj = JSON_OBJVAL(object);
-
-	struct json_bucket_list *current = obj->list;
+	struct json_bucket_list *current = object->list;
 	while (current) {
 		struct json_bucket_list *next = current->next;
 		json_free(current->data->value);
@@ -40,24 +38,22 @@ void json_object_free(struct json object)
 		current = next;
 	}
 
-	free(obj->data);
-	free(obj);
+	free(object->data);
+	free(object);
 }
 
-void json_object_reserve(struct json object, size_t size)
+void json_object_reserve(struct json_object *object, size_t size)
 {
-	struct json_object *obj = JSON_OBJVAL(object);
-
-	if (size <= obj->capacity)
+	if (size <= object->capacity)
 		return;
 
-	struct json_bucket *data = obj->data;
-	struct json_bucket_list *current = obj->list;
+	struct json_bucket *data = object->data;
+	struct json_bucket_list *current = object->list;
 
-	obj->data = ecalloc(size, sizeof(struct json_bucket));
-	obj->list = NULL;
-	obj->capacity = size;
-	obj->size = 0;
+	object->data = ecalloc(size, sizeof(struct json_bucket));
+	object->list = NULL;
+	object->capacity = size;
+	object->size = 0;
 
 	while (current) {
 		struct json_bucket_list *next = current->next;
@@ -72,23 +68,21 @@ void json_object_reserve(struct json object, size_t size)
 	free(current);
 }
 
-void json_object_setn(struct json object, const char *key,
+void json_object_setn(struct json_object *object, const char *key,
 		      size_t key_size, struct json value)
 {
-	struct json_object *obj = JSON_OBJVAL(object);
-
-	if (obj->size >= obj->capacity * obj->load_factor) {
-		size_t size = obj->capacity ?
-			(obj->capacity << 1) : JSON_OBJECT_INITIAL_CAPACITY;
+	if (object->size >= object->capacity * object->load_factor) {
+		size_t size = object->capacity ?
+			(object->capacity << 1) : JSON_OBJECT_INITIAL_CAPACITY;
 		json_object_reserve(object, size);
 	}
 
 	struct json_bucket *bucket = NULL;
 	int same_keys = 0;
 
-	size_t i, index = json_hashn(key, key_size) % obj->capacity;
-	for (i = 0; i < obj->capacity; ++i, index = (index + 1) % obj->capacity) {
-		bucket = obj->data + index;
+	size_t i, index = json_hashn(key, key_size) % object->capacity;
+	for (i = 0; i < object->capacity; ++i, index = (index + 1) % object->capacity) {
+		bucket = object->data + index;
 		if (bucket->key && !(same_keys = strncmp(bucket->key, key, key_size) == 0)) {
 			bucket = NULL;
 			same_keys = 0;
@@ -99,7 +93,7 @@ void json_object_setn(struct json object, const char *key,
 			bucket->key = json_strdupn(key, key_size);
 		json_free(bucket->value);
 		bucket->value = value;
-		++obj->size;
+		++object->size;
 
 		break;
 	}
@@ -107,14 +101,14 @@ void json_object_setn(struct json object, const char *key,
 	if (!bucket)
 		return;
 
-	if (!obj->list) {
-		obj->list = ecalloc(1, sizeof(struct json_bucket_list));
-		obj->end = obj->list;
+	if (!object->list) {
+		object->list = ecalloc(1, sizeof(struct json_bucket_list));
+		object->end = object->list;
 	}
 
 	if (same_keys) { /* the value was overwritten */
-		struct json_bucket_list *previous = obj->list;
-		struct json_bucket_list *current = obj->list;
+		struct json_bucket_list *previous = object->list;
+		struct json_bucket_list *current = object->list;
 
 		/* find the bucket that was edited */
 		while (current && current->next && current->data != bucket) {
@@ -127,30 +121,28 @@ void json_object_setn(struct json object, const char *key,
 				/* put the bucket at the end of the list */
 				previous->data = current->next->data;
 				previous->next = current->next->next;
-				obj->end->data = current->data;
+				object->end->data = current->data;
 			}
 			return;
 		}
 	}
 
 	/* append the value to the end of the list */
-	if (!obj->end->data)
-		obj->end->data = bucket;
+	if (!object->end->data)
+		object->end->data = bucket;
 	else {
-		obj->end->next = ecalloc(1, sizeof(struct json_bucket_list));
-		obj->end->next->data = bucket;
-		obj->end = obj->end->next;
+		object->end->next = ecalloc(1, sizeof(struct json_bucket_list));
+		object->end->next->data = bucket;
+		object->end = object->end->next;
 	}
 }
 
-struct json json_object_getn(struct json object,
+struct json json_object_getn(struct json_object *object,
 			     const char *key, size_t key_size)
 {
-	struct json_object *obj = JSON_OBJVAL(object);
-
-	size_t i, index = json_hashn(key, key_size) % obj->capacity;
-	for (i = 0; i < obj->capacity; ++i, index = (index + 1) % obj->capacity) {
-		struct json_bucket *bucket = obj->data + index;
+	size_t i, index = json_hashn(key, key_size) % object->capacity;
+	for (i = 0; i < object->capacity; ++i, index = (index + 1) % object->capacity) {
+		struct json_bucket *bucket = object->data + index;
 		if (bucket->key && strncmp(bucket->key, key, key_size) == 0)
 			return bucket->value;
 	}
@@ -158,7 +150,7 @@ struct json json_object_getn(struct json object,
 	return JSON_NONE;
 }
 
-JSON_TYPE json_object_try_getn(struct json object, const char *key,
+JSON_TYPE json_object_try_getn(struct json_object *object, const char *key,
 			       size_t key_size, struct json *out_value)
 {
 	struct json value = json_object_getn(object, key, key_size);

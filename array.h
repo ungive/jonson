@@ -15,10 +15,7 @@ struct json_array {
 	struct json *data;
 };
 
-static inline json_t json_array_new(void)
-{
-	return JSON_ARR(ecalloc(1, sizeof(struct json_array)));
-}
+json_t json_array_new(void);
 
 void json_array_free(json_t array);
 

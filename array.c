@@ -6,8 +6,11 @@
 
 #include <stdlib.h>
 
+#include "config.h"
 #include "jonson.h"
 #include "array.h"
+
+#define INITIAL_CAPACITY 16
 
 void json_array_free(json_t array)
 {
@@ -64,7 +67,8 @@ void json_array_add(json_t array, json_t value)
 	struct json_array *arr = JSON_ARRVAL(array);
 
 	if (arr->size >= arr->capacity) {
-		size_t size = arr->capacity ? (arr->capacity << 1) : 16;
+		size_t size = arr->capacity ?
+			(arr->capacity << 1) : JSON_ARRAY_INITIAL_CAPACITY;
 		json_array_reserve(array, size);
 	}
 

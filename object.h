@@ -27,6 +27,7 @@ struct json_bucket_list {
 struct json_object {
 	size_t capacity;
 	size_t size;
+	float load_factor;
 	struct json_bucket *data;
 	struct json_bucket_list *list;
 	struct json_bucket_list *end;
@@ -38,12 +39,14 @@ struct json_object {
 uint32_t json_hashn(const char *str, size_t size);
 #define json_hash(str) json_hashn(str, (str) ? strlen(str) : 0)
 
-static inline json_t json_object_new(void)
-{
-	return JSON_OBJ(ecalloc(1, sizeof(struct json_object)));
-}
+json_t json_object_new(void);
 
 void json_object_free(json_t object);
+
+static inline void json_object_set_load_factor(json_t object, float load_factor)
+{
+	JSON_OBJVAL(object)->load_factor = load_factor;
+}
 
 /*
  * Reserves space to fit at least 'size' elements into a [struct json_object].

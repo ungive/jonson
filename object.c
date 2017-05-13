@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 
+#include "config.h"
 #include "jonson.h"
 #include "object.h"
 #include "ecalloc.h"
@@ -17,6 +18,13 @@ uint32_t json_hashn(const char *str, size_t size)
 	for (i = 0; i < size; ++i)
 		hash = ((hash << 5) + hash) + str[i];
 	return hash;
+}
+
+json_t json_object_new(void)
+{
+	struct json_object *object = ecalloc(1, sizeof(struct json_object));
+	object->load_factor = JSON_OBJECT_INITIAL_LOAD_FACTOR;
+	return JSON_OBJ(object);
 }
 
 void json_object_free(json_t object)
@@ -69,8 +77,9 @@ void json_object_setn(json_t object, const char *key,
 {
 	struct json_object *obj = JSON_OBJVAL(object);
 
-	if (obj->size >= obj->capacity) {
-		size_t size = obj->capacity ? (obj->capacity << 1) : 16;
+	if (obj->size >= obj->capacity * obj->load_factor) {
+		size_t size = obj->capacity ?
+			(obj->capacity << 1) : JSON_OBJECT_INITIAL_CAPACITY;
 		json_object_reserve(object, size);
 	}
 

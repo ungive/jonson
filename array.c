@@ -10,8 +10,6 @@
 #include "jonson.h"
 #include "array.h"
 
-#define INITIAL_CAPACITY 16
-
 void json_array_free(json_t array)
 {
 	struct json_array *arr = JSON_ARRVAL(array);

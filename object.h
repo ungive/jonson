@@ -33,12 +33,6 @@ struct json_object {
 };
 
 /*
- * The amount by which a [struct json_object]'s data array is resized.
- * Used in json_object_set() if there is no space to add an element.
- */
-extern size_t json_object_chunk_size;
-
-/*
  * Hash function created by Daniel J. Bernstein.
  */
 uint32_t json_hashn(const char *str, size_t size);

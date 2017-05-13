@@ -10,8 +10,6 @@
 #include "object.h"
 #include "ecalloc.h"
 
-size_t json_object_chunk_size = 8;
-
 uint32_t json_hashn(const char *str, size_t size)
 {
 	uint32_t hash = 5381;
@@ -71,8 +69,10 @@ void json_object_setn(json_t object, const char *key,
 {
 	struct json_object *obj = JSON_OBJVAL(object);
 
-	if (obj->size >= obj->capacity)
-		json_object_reserve(object, obj->capacity + json_object_chunk_size);
+	if (obj->size >= obj->capacity) {
+		size_t size = obj->capacity ? (obj->capacity << 1) : 16;
+		json_object_reserve(object, size);
+	}
 
 	struct json_bucket *bucket = NULL;
 	int same_keys = 0;

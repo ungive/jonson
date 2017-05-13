@@ -15,12 +15,6 @@ struct json_array {
 	struct json *data;
 };
 
-/*
- * The amount by which a [struct json_array]'s data array is resized.
- * Used by json_object_set() if there is no space to add an element.
- */
-extern size_t json_array_chunk_size;
-
 static inline json_t json_array_new(void)
 {
 	return JSON_ARR(ecalloc(1, sizeof(struct json_array)));

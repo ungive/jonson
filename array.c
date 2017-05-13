@@ -9,8 +9,6 @@
 #include "jonson.h"
 #include "array.h"
 
-size_t json_array_chunk_size = 16;
-
 void json_array_free(json_t array)
 {
 	struct json_array *arr = JSON_ARRVAL(array);
@@ -65,8 +63,10 @@ void json_array_add(json_t array, json_t value)
 {
 	struct json_array *arr = JSON_ARRVAL(array);
 
-	if (arr->size >= arr->capacity)
-		json_array_reserve(array, arr->capacity + json_array_chunk_size);
+	if (arr->size >= arr->capacity) {
+		size_t size = arr->capacity ? (arr->capacity << 1) : 16;
+		json_array_reserve(array, size);
+	}
 
 	arr->data[arr->size++] = value;
 }

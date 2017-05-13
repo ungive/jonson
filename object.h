@@ -28,9 +28,10 @@ struct json_object {
 	size_t capacity;
 	size_t size;
 	float load_factor;
+	int ordered;
 	struct json_bucket *data;
-	struct json_bucket_list *list;
-	struct json_bucket_list *end;
+	struct json_bucket_list *order;
+	struct json_bucket_list *order_end;
 };
 
 /*

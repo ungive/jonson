@@ -29,7 +29,7 @@ struct json_object *json_object_new(void)
 
 void json_object_free(struct json_object *object)
 {
-	struct json_bucket_list *current = object->list;
+	struct json_bucket_list *current = object->order;
 	while (current) {
 		struct json_bucket_list *next = current->next;
 		json_free(current->data->value);
@@ -48,10 +48,10 @@ void json_object_reserve(struct json_object *object, size_t size)
 		return;
 
 	struct json_bucket *data = object->data;
-	struct json_bucket_list *current = object->list;
+	struct json_bucket_list *current = object->order;
 
 	object->data = ecalloc(size, sizeof(struct json_bucket));
-	object->list = NULL;
+	object->order = NULL;
 	object->capacity = size;
 	object->size = 0;
 
@@ -101,14 +101,14 @@ void json_object_setn(struct json_object *object, const char *key,
 	if (!bucket)
 		return;
 
-	if (!object->list) {
-		object->list = ecalloc(1, sizeof(struct json_bucket_list));
-		object->end = object->list;
+	if (!object->order) {
+		object->order = ecalloc(1, sizeof(struct json_bucket_list));
+		object->order_end = object->order;
 	}
 
 	if (same_keys) { /* the value was overwritten */
-		struct json_bucket_list *previous = object->list;
-		struct json_bucket_list *current = object->list;
+		struct json_bucket_list *previous = object->order;
+		struct json_bucket_list *current = object->order;
 
 		/* find the bucket that was edited */
 		while (current && current->next && current->data != bucket) {
@@ -121,19 +121,20 @@ void json_object_setn(struct json_object *object, const char *key,
 				/* put the bucket at the end of the list */
 				previous->data = current->next->data;
 				previous->next = current->next->next;
-				object->end->data = current->data;
+				object->order_end->data = current->data;
 			}
 			return;
 		}
 	}
 
 	/* append the value to the end of the list */
-	if (!object->end->data)
-		object->end->data = bucket;
+	if (!object->order_end->data)
+		object->order_end->data = bucket;
 	else {
-		object->end->next = ecalloc(1, sizeof(struct json_bucket_list));
-		object->end->next->data = bucket;
-		object->end = object->end->next;
+		object->order_end->next =
+			ecalloc(1, sizeof(struct json_bucket_list));
+		object->order_end->next->data = bucket;
+		object->order_end = object->order_end->next;
 	}
 }
 

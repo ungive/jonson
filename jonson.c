@@ -32,13 +32,14 @@ struct json json_build(JSON_TYPE type, ...)
 		result = JSON_OBJ(object);
 	}
 	else {
-		result = json_array_new();
+		struct json_array *array = json_array_new();
 		while (1) {
 			struct json value = va_arg(args, struct json);
 			if (value.type == JSON_TYPE_NONE)
 				break;
-			json_array_add(result, value);
+			json_array_add(array, value);
 		}
+		result = JSON_ARR(array);
 	}
 
 	va_end(args);
@@ -50,7 +51,7 @@ void json_free(struct json value)
 	switch (value.type) {
 	case JSON_TYPE_STRING: free(JSON_STRVAL(value)); return;
 	case JSON_TYPE_OBJECT: json_object_free(JSON_OBJVAL(value)); return;
-	case JSON_TYPE_ARRAY:  json_array_free(value); return;
+	case JSON_TYPE_ARRAY:  json_array_free(JSON_ARRVAL(value)); return;
 	default: return;
 	}
 }
@@ -111,11 +112,11 @@ char *json_serialise(struct json value)
 		struct json_object *object = JSON_OBJVAL(value);
 		strbuffer_append_char(sb, '{');
 
-		struct json_bucket_list *current = object ? object->list : NULL;
+		struct json_bucket_list *current = object ? object->order : NULL;
 		while (current) {
 			struct json_bucket *bucket = current->data;
 
-			char *value_ = json_serialise(bucket->value);
+			char *val = json_serialise(bucket->value);
 			char *key = json_serialise((struct json){
 				.type = JSON_TYPE_STRING,
 				.value.string = bucket->key
@@ -123,10 +124,10 @@ char *json_serialise(struct json value)
 
 			strbuffer_append(sb, key);
 			strbuffer_append_char(sb, ':');
-			strbuffer_append(sb, value_);
+			strbuffer_append(sb, val);
 
 			free(key);
-			free(value_);
+			free(val);
 
 			if ((current = current->next))
 				strbuffer_append_char(sb, ',');
@@ -141,9 +142,9 @@ char *json_serialise(struct json value)
 
 		size_t i = 0;
 		while (i < array->size) {
-			char *value_ = json_serialise(json_array_get(value, i));
-			strbuffer_append(sb, value_);
-			free(value_);
+			char *val = json_serialise(json_array_get(array, i));
+			strbuffer_append(sb, val);
+			free(val);
 
 			if (++i < array->size)
 				strbuffer_append_char(sb, ',');
@@ -241,7 +242,7 @@ signed long long json_parsen(const char *json, size_t size, struct json *out)
 			json_stack_push(&stack, JSON_OBJ(json_object_new()));
 			continue;
 		case JSON_TOKEN_BEGIN_ARRAY:
-			json_stack_push(&stack, json_array_new());
+			json_stack_push(&stack, JSON_ARR(json_array_new()));
 			continue;
 		case JSON_TOKEN_VALUE_SEPARATOR:
 		case JSON_TOKEN_END_OBJECT:
@@ -250,7 +251,7 @@ signed long long json_parsen(const char *json, size_t size, struct json *out)
 					stack && stack->next &&
 					stack->next->data.type == JSON_TYPE_ARRAY) {
 				struct json value = json_stack_pop(&stack);
-				json_array_add(stack->data, value);
+				json_array_add(JSON_ARRVAL(stack->data), value);
 			}
 			else if (token.type != JSON_TOKEN_END_ARRAY &&
 					stack && stack->next && stack->next->next &&

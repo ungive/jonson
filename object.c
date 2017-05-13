@@ -20,14 +20,14 @@ uint32_t json_hashn(const char *str, size_t size)
 	return hash;
 }
 
-json_t json_object_new(void)
+struct json json_object_new(void)
 {
 	struct json_object *object = ecalloc(1, sizeof(struct json_object));
 	object->load_factor = JSON_OBJECT_INITIAL_LOAD_FACTOR;
 	return JSON_OBJ(object);
 }
 
-void json_object_free(json_t object)
+void json_object_free(struct json object)
 {
 	struct json_object *obj = JSON_OBJVAL(object);
 
@@ -44,7 +44,7 @@ void json_object_free(json_t object)
 	free(obj);
 }
 
-void json_object_reserve(json_t object, size_t size)
+void json_object_reserve(struct json object, size_t size)
 {
 	struct json_object *obj = JSON_OBJVAL(object);
 
@@ -72,8 +72,8 @@ void json_object_reserve(json_t object, size_t size)
 	free(current);
 }
 
-void json_object_setn(json_t object, const char *key,
-		      size_t key_size, json_t value)
+void json_object_setn(struct json object, const char *key,
+		      size_t key_size, struct json value)
 {
 	struct json_object *obj = JSON_OBJVAL(object);
 
@@ -143,7 +143,8 @@ void json_object_setn(json_t object, const char *key,
 	}
 }
 
-json_t json_object_getn(json_t object, const char *key, size_t key_size)
+struct json json_object_getn(struct json object,
+			     const char *key, size_t key_size)
 {
 	struct json_object *obj = JSON_OBJVAL(object);
 
@@ -157,10 +158,10 @@ json_t json_object_getn(json_t object, const char *key, size_t key_size)
 	return JSON_NONE;
 }
 
-JSON_TYPE json_object_try_getn(json_t object, const char *key,
-			       size_t key_size, json_t *out_value)
+JSON_TYPE json_object_try_getn(struct json object, const char *key,
+			       size_t key_size, struct json *out_value)
 {
-	json_t value = json_object_getn(object, key, key_size);
+	struct json value = json_object_getn(object, key, key_size);
 	if (out_value)
 		*out_value = value;
 	return value.type;

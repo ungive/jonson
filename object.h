@@ -39,11 +39,12 @@ struct json_object {
 uint32_t json_hashn(const char *str, size_t size);
 #define json_hash(str) json_hashn(str, (str) ? strlen(str) : 0)
 
-json_t json_object_new(void);
+struct json json_object_new(void);
 
-void json_object_free(json_t object);
+void json_object_free(struct json object);
 
-static inline void json_object_set_load_factor(json_t object, float load_factor)
+static inline void json_object_set_load_factor(struct json object,
+					       float load_factor)
 {
 	JSON_OBJVAL(object)->load_factor = load_factor;
 }
@@ -54,14 +55,14 @@ static inline void json_object_set_load_factor(json_t object, float load_factor)
  * Call this function before adding elements, if the amount is known
  * in advance (even if only approximately).
  */
-void json_object_reserve(json_t object, size_t size);
+void json_object_reserve(struct json object, size_t size);
 
 /*
  * To prevent a value from being freed when overwritten, use
  * json_object_remove() to remove it first.
  */
-void json_object_setn(json_t object, const char *key,
-		      size_t key_size, json_t value);
+void json_object_setn(struct json object, const char *key,
+		      size_t key_size, struct json value);
 #define json_object_set(object, key, value) \
 	json_object_setn(object, key, (key) ? strlen(key) : 0, value)
 
@@ -69,12 +70,13 @@ void json_object_setn(json_t object, const char *key,
  * The type of the returned value will be JSON_TYPE_NONE
  * if no value was found at the specified index.
  */
-json_t json_object_getn(json_t object, const char *key, size_t key_size);
+struct json json_object_getn(struct json object,
+			     const char *key, size_t key_size);
 #define json_object_get(object, key) \
 	json_object_getn(object, key, (key) ? strlen(key) : 0)
 
-JSON_TYPE json_object_try_getn(json_t object, const char *key,
-			       size_t key_size, json_t *out_value);
+JSON_TYPE json_object_try_getn(struct json object, const char *key,
+			       size_t key_size, struct json *out_value);
 #define json_object_try_get(object, key, out_value) \
 	json_object_try_getn(object, key, (key) ? strlen(key) : 0, out_value)
 

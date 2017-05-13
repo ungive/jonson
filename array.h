@@ -15,27 +15,27 @@ struct json_array {
 	struct json *data;
 };
 
-json_t json_array_new(void);
+struct json json_array_new(void);
 
-void json_array_free(json_t array);
+void json_array_free(struct json array);
 
 /*
  * Reserves space to fit at least 'size' elements into a [struct json_array].
  */
-void json_array_reserve(json_t array, size_t size);
+void json_array_reserve(struct json array, size_t size);
 
 /*
  * Resizes a [struct json_array] to 'size'.
  * Elements that excess are freed and deleted.
  */
-void json_array_resize(json_t array, size_t size);
+void json_array_resize(struct json array, size_t size);
 
-void json_array_add(json_t array, json_t value);
+void json_array_add(struct json array, struct json value);
 
 /*
  * The type of the returned value will be JSON_TYPE_NONE
  * if the index exceeds the size of the array.
  */
-json_t json_array_get(json_t array, size_t index);
+struct json json_array_get(struct json array, size_t index);
 
 #endif /* JONSON_ARRAY_H */

@@ -10,12 +10,12 @@
 #include "jonson.h"
 #include "array.h"
 
-json_t json_array_new(void)
+struct json json_array_new(void)
 {
 	return JSON_ARR(ecalloc(1, sizeof(struct json_array)));
 }
 
-void json_array_free(json_t array)
+void json_array_free(struct json array)
 {
 	struct json_array *arr = JSON_ARRVAL(array);
 
@@ -29,14 +29,14 @@ void json_array_free(json_t array)
 	free(arr);
 }
 
-void json_array_reserve(json_t array, size_t size)
+void json_array_reserve(struct json array, size_t size)
 {
 	struct json_array *arr = JSON_ARRVAL(array);
 
 	if (size <= arr->capacity)
 		return;
 
-	json_t *data = ecalloc(size, sizeof(json_t));
+	struct json *data = ecalloc(size, sizeof(struct json));
 
 	if (arr->data) {
 		size_t i;
@@ -49,7 +49,7 @@ void json_array_reserve(json_t array, size_t size)
 	arr->capacity = size;
 }
 
-void json_array_resize(json_t array, size_t size)
+void json_array_resize(struct json array, size_t size)
 {
 	struct json_array *arr = JSON_ARRVAL(array);
 
@@ -57,7 +57,7 @@ void json_array_resize(json_t array, size_t size)
 		json_array_reserve(array, size);
 	else {
 		size_t i;
-		json_t *end = arr->data + size;
+		struct json *end = arr->data + size;
 		for (i = 0; i < size; ++i)
 			json_free(end[i]);
 		memset(end, 0, arr->size - size);
@@ -65,7 +65,7 @@ void json_array_resize(json_t array, size_t size)
 	}
 }
 
-void json_array_add(json_t array, json_t value)
+void json_array_add(struct json array, struct json value)
 {
 	struct json_array *arr = JSON_ARRVAL(array);
 
@@ -78,7 +78,7 @@ void json_array_add(json_t array, json_t value)
 	arr->data[arr->size++] = value;
 }
 
-json_t json_array_get(json_t array, size_t index)
+struct json json_array_get(struct json array, size_t index)
 {
 	struct json_array *arr = JSON_ARRVAL(array);
 

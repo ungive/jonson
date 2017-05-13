@@ -22,7 +22,7 @@ void json_stack_free(struct json_stack *stack, int free_plates)
 	}
 }
 
-void json_stack_push(struct json_stack **stack_ptr, json_t value)
+void json_stack_push(struct json_stack **stack_ptr, struct json value)
 {
 	struct json_stack *plate = ecalloc(1, sizeof(struct json_stack));
 	plate->data = value;
@@ -30,10 +30,10 @@ void json_stack_push(struct json_stack **stack_ptr, json_t value)
 	*stack_ptr = plate;
 }
 
-json_t json_stack_pop(struct json_stack **stack_ptr)
+struct json json_stack_pop(struct json_stack **stack_ptr)
 {
 	struct json_stack *stack = *stack_ptr;
-	json_t data = stack->data;
+	struct json data = stack->data;
 
 	*stack_ptr = stack->next ? stack->next : NULL;
 	free(stack);

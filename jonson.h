@@ -36,10 +36,10 @@ typedef enum JSON_TYPE {
 /*
  * Use the type to interpret the value correctly.
  */
-typedef struct json {
+struct json {
 	union json_value value;
 	enum JSON_TYPE type;
-} json_t;
+};
 
 /*
  * Creates a [struct json], with its root element being of the specified type.
@@ -47,15 +47,15 @@ typedef struct json {
  * no other can be nested or would be simpler to create with this function
  * (use the macros defined at the bottom of this header instead).
  */
-json_t json_build(JSON_TYPE type, ...);
+struct json json_build(JSON_TYPE type, ...);
 
-void json_free(json_t value);
+void json_free(struct json value);
 
 /*
  * Serialises a [struct json] (converts it to string representation).
  * NULL is returned if a value of type JSON_TYPE_NONE is passed.
  */
-char *json_serialise(json_t value);
+char *json_serialise(struct json value);
 #define json_serialize(value) json_serialise(value)
 
 /*
@@ -64,8 +64,10 @@ char *json_serialise(json_t value);
  * was encountered at that position, or, if it equals the size of the string,
  * the JSON string ended unexpectedly.
  */
-signed long long json_parsen(const char *json, size_t size, json_t *out);
+signed long long json_parsen(const char *json, size_t size, struct json *out);
 #define json_parse(json, out) json_parsen(json, (json) ? strlen(json) : 0, out)
+
+signed long long json_parsen2(const char *json, size_t size, struct json *out);
 
 static inline char *json_strdupn(const char *str, size_t size)
 {
@@ -77,15 +79,15 @@ static inline char *json_strdupn(const char *str, size_t size)
  * Encapsulates a value in a [struct json].
  */
 #define JSON_STRN(data, size) \
-	((json_t){ .type = JSON_TYPE_STRING, \
+	((struct json){ .type = JSON_TYPE_STRING, \
 		   .value.string = json_strdupn(data, size) })
 #define JSON_STR(data) JSON_STRN(data, (data) ? strlen(data) : 0)
-#define JSON_NUM(data) ((json_t){ .type = JSON_TYPE_NUMBER, .value.number = data })
-#define JSON_BOOL(data) ((json_t){ .type = JSON_TYPE_BOOLEAN, .value.boolean = data })
-#define JSON_OBJ(data) ((json_t){ .type = JSON_TYPE_OBJECT, .value.object = data })
-#define JSON_ARR(data) ((json_t){ .type = JSON_TYPE_ARRAY, .value.array = data })
-#define JSON_NULL ((json_t){ .type = JSON_TYPE_NULL, .value = { 0 } })
-#define JSON_NONE ((json_t){ .type = JSON_TYPE_NONE, .value = { 0 } })
+#define JSON_NUM(data) ((struct json){ .type = JSON_TYPE_NUMBER, .value.number = data })
+#define JSON_BOOL(data) ((struct json){ .type = JSON_TYPE_BOOLEAN, .value.boolean = data })
+#define JSON_OBJ(data) ((struct json){ .type = JSON_TYPE_OBJECT, .value.object = data })
+#define JSON_ARR(data) ((struct json){ .type = JSON_TYPE_ARRAY, .value.array = data })
+#define JSON_NULL ((struct json){ .type = JSON_TYPE_NULL, .value = { 0 } })
+#define JSON_NONE ((struct json){ .type = JSON_TYPE_NONE, .value = { 0 } })
 
 /*
  * Macros for use with the function json_build().

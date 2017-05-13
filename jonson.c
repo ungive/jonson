@@ -14,9 +14,9 @@
 #include "strbuffer.h"
 #include "stack.h"
 
-json_t json_build(JSON_TYPE type, ...)
+struct json json_build(JSON_TYPE type, ...)
 {
-	json_t result;
+	struct json result;
 
 	va_list args;
 	va_start(args, type);
@@ -33,7 +33,7 @@ json_t json_build(JSON_TYPE type, ...)
 	else {
 		result = json_array_new();
 		while (1) {
-			json_t value = va_arg(args, json_t);
+			struct json value = va_arg(args, struct json);
 			if (value.type == JSON_TYPE_NONE)
 				break;
 			json_array_add(result, value);
@@ -44,7 +44,7 @@ json_t json_build(JSON_TYPE type, ...)
 	return result;
 }
 
-void json_free(json_t value)
+void json_free(struct json value)
 {
 	switch (value.type) {
 	case JSON_TYPE_STRING: free(JSON_STRVAL(value)); return;
@@ -54,7 +54,7 @@ void json_free(json_t value)
 	}
 }
 
-char *json_serialise(json_t value)
+char *json_serialise(struct json value)
 {
 	strbuffer_t *sb = strbuffer_new();
 
@@ -115,7 +115,7 @@ char *json_serialise(json_t value)
 			struct json_bucket *bucket = current->data;
 
 			char *value_ = json_serialise(bucket->value);
-			char *key = json_serialise((json_t){
+			char *key = json_serialise((struct json){
 				.type = JSON_TYPE_STRING,
 				.value.string = bucket->key
 			});
@@ -158,12 +158,12 @@ char *json_serialise(json_t value)
 	return result;
 }
 
-signed long long json_parsen(const char *json, size_t size, json_t *out)
+signed long long json_parsen(const char *json, size_t size, struct json *out)
 {
 	struct json_token token;
 	json_token_initn(&token, json, size);
 	struct json_stack *stack = json_stack_new();
-	json_t result = JSON_NONE;
+	struct json result = JSON_NONE;
 
 	while (json_next_token(&token)) {
 		switch (token.type) {
@@ -196,7 +196,7 @@ signed long long json_parsen(const char *json, size_t size, json_t *out)
 				*current++ = *str++;
 			}
 
-			json_stack_push(&stack, (json_t){
+			json_stack_push(&stack, (struct json){
 				.type = JSON_TYPE_STRING,
 				.value.string = value
 			});
@@ -248,15 +248,15 @@ signed long long json_parsen(const char *json, size_t size, json_t *out)
 			if (token.type != JSON_TOKEN_END_OBJECT &&
 					stack && stack->next &&
 					stack->next->data.type == JSON_TYPE_ARRAY) {
-				json_t value = json_stack_pop(&stack);
+				struct json value = json_stack_pop(&stack);
 				json_array_add(stack->data, value);
 			}
 			else if (token.type != JSON_TOKEN_END_ARRAY &&
 					stack && stack->next && stack->next->next &&
 					stack->next->data.type == JSON_TYPE_STRING &&
 					stack->next->next->data.type == JSON_TYPE_OBJECT) {
-				json_t value = json_stack_pop(&stack);
-				json_t key = json_stack_pop(&stack);
+				struct json value = json_stack_pop(&stack);
+				struct json key = json_stack_pop(&stack);
 				json_object_set(stack->data, JSON_STRVAL(key), value);
 				free(JSON_STRVAL(key));
 			}

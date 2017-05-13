@@ -9,7 +9,7 @@
 
 struct json_stack {
 	int ready;
-	json_t data;
+	struct json data;
 	struct json_stack *next;
 };
 
@@ -20,8 +20,8 @@ static inline struct json_stack *json_stack_new()
 
 void json_stack_free(struct json_stack *stack, int free_plates);
 
-void json_stack_push(struct json_stack **stack_ptr, json_t value);
+void json_stack_push(struct json_stack **stack_ptr, struct json value);
 
-json_t json_stack_pop(struct json_stack **stack_ptr);
+struct json json_stack_pop(struct json_stack **stack_ptr);
 
 #endif /* STACK_H */

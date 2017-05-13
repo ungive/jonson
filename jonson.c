@@ -112,24 +112,16 @@ char *json_serialise(struct json value)
 		struct json_object *object = JSON_OBJVAL(value);
 		strbuffer_append_char(sb, '{');
 
-		struct json_bucket_list *current = object ? object->order : NULL;
+		struct json_bucket *current = object->order_first;
 		while (current) {
-			struct json_bucket *bucket = current->data;
-
-			char *val = json_serialise(bucket->value);
-			char *key = json_serialise((struct json){
-				.type = JSON_TYPE_STRING,
-				.value.string = bucket->key
-			});
-
-			strbuffer_append(sb, key);
+			char *val = json_serialise(current->value);
+			strbuffer_append_char(sb, '"');
+			strbuffer_append(sb, current->key);
+			strbuffer_append_char(sb, '"');
 			strbuffer_append_char(sb, ':');
 			strbuffer_append(sb, val);
-
-			free(key);
 			free(val);
-
-			if ((current = current->next))
+			if ((current = current->order_next))
 				strbuffer_append_char(sb, ',');
 		}
 
@@ -238,9 +230,11 @@ signed long long json_parsen(const char *json, size_t size, struct json *out)
 					!stack->next || stack->next->data.type != JSON_TYPE_OBJECT)
 				goto unexpected_token;
 			continue;
-		case JSON_TOKEN_BEGIN_OBJECT:
-			json_stack_push(&stack, JSON_OBJ(json_object_new()));
+		case JSON_TOKEN_BEGIN_OBJECT: {
+			struct json_object *object = json_object_new();
+			json_stack_push(&stack, JSON_OBJ(object));
 			continue;
+		}
 		case JSON_TOKEN_BEGIN_ARRAY:
 			json_stack_push(&stack, JSON_ARR(json_array_new()));
 			continue;
@@ -258,10 +252,10 @@ signed long long json_parsen(const char *json, size_t size, struct json *out)
 					stack->next->data.type == JSON_TYPE_STRING &&
 					stack->next->next->data.type == JSON_TYPE_OBJECT) {
 				struct json value = json_stack_pop(&stack);
-				struct json key = json_stack_pop(&stack);
+				char *key = JSON_STRVAL(json_stack_pop(&stack));
 				json_object_set(JSON_OBJVAL(stack->data),
-					JSON_STRVAL(key), value);
-				free(JSON_STRVAL(key));
+					key, value);
+				free(key);
 			}
 			if (!stack || (stack->data.type != JSON_TYPE_OBJECT &&
 				       stack->data.type != JSON_TYPE_ARRAY) ||

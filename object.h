@@ -13,25 +13,18 @@
 struct json_bucket {
 	char *key;
 	struct json value;
-};
-
-/*
- * A simple linked list to keep track of the order in which
- * buckets are added to a [struct json_object].
- */
-struct json_bucket_list {
-	struct json_bucket *data;
-	struct json_bucket_list *next;
+	struct json_bucket *next;
+	struct json_bucket *order_next;
+	struct json_bucket **order_pnext;
 };
 
 struct json_object {
 	size_t capacity;
 	size_t size;
 	float load_factor;
-	int ordered;
-	struct json_bucket *data;
-	struct json_bucket_list *order;
-	struct json_bucket_list *order_end;
+	struct json_bucket **buckets;
+	struct json_bucket *order_first;
+	struct json_bucket **order_last;
 };
 
 /*

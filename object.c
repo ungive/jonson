@@ -24,21 +24,21 @@ struct json_object *json_object_new(void)
 {
 	struct json_object *object = ecalloc(1, sizeof(struct json_object));
 	object->load_factor = JSON_OBJECT_INITIAL_LOAD_FACTOR;
+	object->order_last = &object->order_first;
 	return object;
 }
 
 void json_object_free(struct json_object *object)
 {
-	struct json_bucket_list *current = object->order;
+	struct json_bucket *current = object->order_first;
 	while (current) {
-		struct json_bucket_list *next = current->next;
-		json_free(current->data->value);
-		free(current->data->key);
+		struct json_bucket *next = current->order_next;
+		json_free(current->value);
+		free(current->key);
 		free(current);
 		current = next;
 	}
-
-	free(object->data);
+	free(object->buckets);
 	free(object);
 }
 
@@ -47,106 +47,89 @@ void json_object_reserve(struct json_object *object, size_t size)
 	if (size <= object->capacity)
 		return;
 
-	struct json_bucket *data = object->data;
-	struct json_bucket_list *current = object->order;
+	struct json_bucket **buckets = object->buckets;
+	struct json_bucket *current = object->order_first;
 
-	object->data = ecalloc(size, sizeof(struct json_bucket));
-	object->order = NULL;
+	object->buckets = ecalloc(size, sizeof(struct json_bucket));
+	object->order_first = NULL;
+	object->order_last = &object->order_first;
 	object->capacity = size;
 	object->size = 0;
 
 	while (current) {
-		struct json_bucket_list *next = current->next;
-		struct json_bucket *data = current->data;
-		json_object_set(object, data->key, data->value);
-		free(data->key);
+		struct json_bucket *next = current->order_next;
+		json_object_set(object, current->key, current->value);
+		free(current->key);
 		free(current);
 		current = next;
 	}
+	free(buckets);
+}
 
-	free(data);
-	free(current);
+static int json_strneq(register const char *str1,
+		       register const char *str2,
+		       size_t num)
+{
+	while (*str1++ == *str2)
+		if (!*str2++ || --num == 0)
+			return 1;
+	return 0;
 }
 
 void json_object_setn(struct json_object *object, const char *key,
 		      size_t key_size, struct json value)
 {
-	if (object->size >= object->capacity * object->load_factor) {
-		size_t size = object->capacity ?
-			(object->capacity << 1) : JSON_OBJECT_INITIAL_CAPACITY;
-		json_object_reserve(object, size);
-	}
+	if (object->size >= object->capacity * object->load_factor)
+		json_object_reserve(object, object->capacity ?
+			(object->capacity << 1) : JSON_OBJECT_INITIAL_CAPACITY);
 
-	struct json_bucket *bucket = NULL;
-	int same_keys = 0;
+	size_t index = json_hashn(key, key_size) % object->capacity;
 
-	size_t i, index = json_hashn(key, key_size) % object->capacity;
-	for (i = 0; i < object->capacity; ++i, index = (index + 1) % object->capacity) {
-		bucket = object->data + index;
-		if (bucket->key && !(same_keys = strncmp(bucket->key, key, key_size) == 0)) {
-			bucket = NULL;
-			same_keys = 0;
-			continue;
+	/* Remove the element with the same key. */
+	struct json_bucket *current = object->buckets[index];
+	for (; current; current = current->next)
+		if (json_strneq(current->key, key, key_size)) {
+			*current->order_pnext = current->order_next;
+			object->order_last = current->order_pnext;
+			json_free(current->value);
+			free(current->key);
+			free(current);
+			--object->size;
+			break;
 		}
 
-		if (!bucket->key)
-			bucket->key = json_strdupn(key, key_size);
-		json_free(bucket->value);
-		bucket->value = value;
-		++object->size;
+	/* Create a new bucket and fill it with the passed key and value. */
+	struct json_bucket *bucket = ecalloc(1, sizeof(struct json_bucket));
+	bucket->key = json_strdupn(key, key_size);
+	bucket->value = value;
 
-		break;
-	}
+	/* Set this bucket's next bucket to the bucket
+	   that has already been at this index. */
+	bucket->next = object->buckets[index];
 
-	if (!bucket)
-		return;
+	/* The previous' next pointer points to this bucket. */
+	bucket->order_pnext = object->order_last;
 
-	if (!object->order) {
-		object->order = ecalloc(1, sizeof(struct json_bucket_list));
-		object->order_end = object->order;
-	}
+	/* Set the bucket at this index the the newly created bucket. */
+	object->buckets[index] = bucket;
 
-	if (same_keys) { /* the value was overwritten */
-		struct json_bucket_list *previous = object->order;
-		struct json_bucket_list *current = object->order;
+	/* The last bucket in the order is now this bucket.
+	   The next last bucket is going to be this bucket's next bucket. */
+	*object->order_last = bucket;
+	object->order_last = &bucket->order_next;
 
-		/* find the bucket that was edited */
-		while (current && current->next && current->data != bucket) {
-			previous = current;
-			current = current->next;
-		}
-
-		if (current) {
-			if (current->next) {
-				/* put the bucket at the end of the list */
-				previous->data = current->next->data;
-				previous->next = current->next->next;
-				object->order_end->data = current->data;
-			}
-			return;
-		}
-	}
-
-	/* append the value to the end of the list */
-	if (!object->order_end->data)
-		object->order_end->data = bucket;
-	else {
-		object->order_end->next =
-			ecalloc(1, sizeof(struct json_bucket_list));
-		object->order_end->next->data = bucket;
-		object->order_end = object->order_end->next;
-	}
+	++object->size;
 }
 
 struct json json_object_getn(struct json_object *object,
 			     const char *key, size_t key_size)
 {
-	size_t i, index = json_hashn(key, key_size) % object->capacity;
-	for (i = 0; i < object->capacity; ++i, index = (index + 1) % object->capacity) {
-		struct json_bucket *bucket = object->data + index;
-		if (bucket->key && strncmp(bucket->key, key, key_size) == 0)
-			return bucket->value;
-	}
+	size_t index = json_hashn(key, key_size) % object->capacity;
+
+	struct json_bucket *current = object->buckets[index];
+	for (; current; current = current->order_next)
+		if (json_strneq(current->key, key, key_size))
+			return current->value;
 
 	return JSON_NONE;
 }

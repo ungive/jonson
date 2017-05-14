@@ -58,7 +58,7 @@ void json_free(struct json value)
 
 char *json_serialise(struct json value)
 {
-	strbuffer_t *sb = strbuffer_new();
+	struct strbuffer *sb = strbuffer_new();
 
 	switch (value.type) {
 	case JSON_TYPE_NONE:

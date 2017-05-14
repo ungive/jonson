@@ -8,7 +8,7 @@
 
 #include "strbuffer.h"
 
-void strbuffer_reserve(strbuffer_t *sb, size_t size)
+void strbuffer_reserve(struct strbuffer *sb, size_t size)
 {
 	if (!sb || size <= sb->capacity)
 		return;
@@ -25,7 +25,7 @@ void strbuffer_reserve(strbuffer_t *sb, size_t size)
 	sb->capacity = size;
 }
 
-size_t strbuffer_insertn(strbuffer_t *sb, size_t index,
+size_t strbuffer_insertn(struct strbuffer *sb, size_t index,
 			 const char *str, size_t size)
 {
 	if (!sb || !str || size == 0 || index > sb->size)
@@ -42,7 +42,7 @@ size_t strbuffer_insertn(strbuffer_t *sb, size_t index,
 	return size;
 }
 
-size_t strbuffer_insert_int(strbuffer_t *sb, size_t index,
+size_t strbuffer_insert_int(struct strbuffer *sb, size_t index,
 			    unsigned long long num)
 {
 	if (!sb || index > sb->size)
@@ -60,7 +60,7 @@ size_t strbuffer_insert_int(strbuffer_t *sb, size_t index,
 	return size;
 }
 
-size_t strbuffer_appendf(strbuffer_t *sb, const char *format, ...)
+size_t strbuffer_appendf(struct strbuffer *sb, const char *format, ...)
 {
 	if (!sb || !format)
 		return 0;

@@ -12,42 +12,43 @@
 
 #include "ealloc.h"
 
-typedef struct strbuffer {
+struct strbuffer {
 	size_t capacity;
 	size_t size;
 	char *buffer;
-} strbuffer_t;
+};
 
 static inline
-strbuffer_t* strbuffer_new(void)
+struct strbuffer* strbuffer_new(void)
 {
-	return ecalloc(1, sizeof(strbuffer_t));
+	return ecalloc(1, sizeof(struct strbuffer));
 }
 
 static inline
-void strbuffer_free(strbuffer_t *sb)
+void strbuffer_free(struct strbuffer *sb)
 {
 	free(sb->buffer);
 	free(sb);
 }
 
 static inline
-void strbuffer_clean(strbuffer_t *sb)
+void strbuffer_clean(struct strbuffer *sb)
 {
 	memset(sb->buffer, 0, sb->size * sizeof(char));
 	sb->size = 0;
 }
 
 static inline
-char* strbuffer_to_string(strbuffer_t *sb)
+char* strbuffer_to_string(struct strbuffer *sb)
 {
-	char *string = ecalloc(sb->size + 1, sizeof(char));
+	char *string = emalloc(sb->size + 1, sizeof(char));
+	string[sb->size] = 0;
 	return memcpy(string, sb->buffer, sb->size * sizeof(char));
 }
 
-void strbuffer_reserve(strbuffer_t *sb, size_t size);
+void strbuffer_reserve(struct strbuffer *sb, size_t size);
 
-size_t strbuffer_insertn(strbuffer_t *sb, size_t index,
+size_t strbuffer_insertn(struct strbuffer *sb, size_t index,
 			 const char *str, size_t size);
 #define strbuffer_insert(sb, index, str) \
 	strbuffer_insertn(sb, index, str, (str) ? strlen(str) : 0)
@@ -58,22 +59,22 @@ size_t strbuffer_insertn(strbuffer_t *sb, size_t index,
 	strbuffer_appendn(sb, str, (str) ? strlen(str) : 0)
 
 static inline
-size_t strbuffer_insert_char(strbuffer_t *sb, size_t index, char c)
+size_t strbuffer_insert_char(struct strbuffer *sb, size_t index, char c)
 {
 	return strbuffer_insertn(sb, index, &c, 1);
 }
 
 static inline
-size_t strbuffer_append_char(strbuffer_t *sb, char c)
+size_t strbuffer_append_char(struct strbuffer *sb, char c)
 {
 	return strbuffer_appendn(sb, &c, 1);
 }
 
-size_t strbuffer_insert_int(strbuffer_t *sb, size_t index,
+size_t strbuffer_insert_int(struct strbuffer *sb, size_t index,
 			    unsigned long long num);
 #define strbuffer_append_int(sb, num) \
 	strbuffer_insert_int(sb, (sb) ? (sb)->size : 0, num)
 
-size_t strbuffer_appendf(strbuffer_t *sb, const char *format, ...);
+size_t strbuffer_appendf(struct strbuffer *sb, const char *format, ...);
 
 #endif /* STRBUFFER_H */

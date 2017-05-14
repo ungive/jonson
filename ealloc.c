@@ -28,3 +28,12 @@ void *ecalloc(size_t num, size_t size)
 	}
 	return mem;
 }
+
+void *erealloc(void *ptr, size_t num, size_t size)
+{
+	void *mem = realloc(ptr, num * size);
+	if (!mem && size) {
+		fprintf(stderr, "Failed to reallocate %zu bytes\n", num * size);
+		exit(EXIT_FAILURE);
+	}
+}

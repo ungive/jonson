@@ -23,7 +23,8 @@ void json_stack_free(struct json_stack *stack, int free_plates)
 
 void json_stack_push(struct json_stack **stack_ptr, struct json value)
 {
-	struct json_stack *plate = ecalloc(1, sizeof(struct json_stack));
+	struct json_stack *plate = emalloc(1, sizeof(struct json_stack));
+	plate->ready = 0;
 	plate->data = value;
 	plate->next = *stack_ptr;
 	*stack_ptr = plate;

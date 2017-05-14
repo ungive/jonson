@@ -71,7 +71,8 @@ signed long long json_parsen2(const char *json, size_t size, struct json *out);
 
 static inline char *json_strndup(const char *str, size_t size)
 {
-	char *copy = ecalloc(size + 1, sizeof(char));
+	char *copy = emalloc(size + 1, sizeof(char));
+	copy[size] = 0;
 	return memcpy(copy, str, size * sizeof(char));
 }
 

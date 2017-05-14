@@ -97,9 +97,10 @@ void json_object_setn(struct json_object *object, const char *key,
 		}
 
 	/* Create a new bucket and fill it with the passed key and value. */
-	struct json_bucket *bucket = ecalloc(1, sizeof(struct json_bucket));
+	struct json_bucket *bucket = emalloc(1, sizeof(struct json_bucket));
 	bucket->key = json_strndup(key, key_size);
 	bucket->value = value;
+	bucket->next = NULL;
 
 	/* Set this bucket's next bucket to the bucket
 	   that has already been at this index. */

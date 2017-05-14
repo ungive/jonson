@@ -166,9 +166,10 @@ signed long long json_parsen(const char *json, size_t size, struct json *out)
 			const char *str = token.json + token.position + 1;
 			const char *end = str + size;
 
-			char *value = ecalloc(size + 1, sizeof(char));
-			char *current = value;
+			char *value = emalloc(size + 1, sizeof(char));
+			value[size] = 0;
 
+			char *current = value;
 			while (str != end) {
 				if (*str == '\\' && str + 1 != end) {
 					switch (*(str + 1)) {

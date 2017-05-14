@@ -100,7 +100,7 @@ void json_object_setn(struct json_object *object, const char *key,
 	struct json_bucket *bucket = emalloc(1, sizeof(struct json_bucket));
 	bucket->key = json_strndup(key, key_size);
 	bucket->value = value;
-	bucket->next = NULL;
+	bucket->order_next = NULL;
 
 	/* Set this bucket's next bucket to the bucket
 	   that has already been at this index. */

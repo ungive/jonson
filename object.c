@@ -48,7 +48,7 @@ void json_object_reserve(struct json_object *object, size_t size)
 	struct json_bucket **buckets = object->buckets;
 	struct json_bucket *current = object->order_first;
 
-	object->buckets = ecalloc(size, sizeof(struct json_bucket));
+	object->buckets = ecalloc(size, sizeof(struct json_bucket *));
 	object->order_first = NULL;
 	object->order_last = &object->order_first;
 	object->capacity = size;

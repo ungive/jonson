@@ -11,6 +11,6 @@
 
 void *emalloc(size_t num, size_t size);
 void *ecalloc(size_t num, size_t size);
-void *erealloc(void *ptr, size_t size);
+void *erealloc(void *ptr, size_t num, size_t size);
 
 #endif /* EALLOC_H */

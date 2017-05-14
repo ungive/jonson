@@ -36,4 +36,5 @@ void *erealloc(void *ptr, size_t num, size_t size)
 		fprintf(stderr, "Failed to reallocate %zu bytes\n", num * size);
 		exit(EXIT_FAILURE);
 	}
+	return mem;
 }

@@ -8,7 +8,6 @@
 
 #include "config.h"
 #include "jonson.h"
-#include "array.h"
 
 struct json_array *json_array_new(void)
 {

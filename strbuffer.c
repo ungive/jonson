@@ -7,7 +7,6 @@
 #include <stdarg.h>
 
 #include "strbuffer.h"
-#include "ecalloc.h"
 
 void strbuffer_reserve(strbuffer_t *sb, size_t size)
 {

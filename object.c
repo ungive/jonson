@@ -8,8 +8,6 @@
 
 #include "config.h"
 #include "jonson.h"
-#include "object.h"
-#include "ecalloc.h"
 
 uint32_t json_hashn(const char *str, size_t size)
 {

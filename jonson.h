@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "ecalloc.h"
+#include "ealloc.h"
 
 struct json_object;
 struct json_array;

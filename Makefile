@@ -12,10 +12,10 @@ endif
 OUTDIR  = ../
 LIBDIR  = $(OUTDIR)lib/
 INCLUDE = $(OUTDIR)include/jonson/
-HEADERS = jonson.h object.h array.h token.h ecalloc.h
+HEADERS = jonson.h object.h array.h token.h ealloc.h
 
 LIB = $(LIBDIR)libjonson.a
-OBJ = jonson.o object.o array.o token.o ecalloc.o strbuffer.o stack.o
+OBJ = jonson.o object.o array.o token.o ealloc.o strbuffer.o stack.o
 
 all: lib
 	echo $(CFLAGS)

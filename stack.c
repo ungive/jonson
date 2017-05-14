@@ -8,7 +8,6 @@
 
 #include "jonson.h"
 #include "stack.h"
-#include "ecalloc.h"
 
 void json_stack_free(struct json_stack *stack, int free_plates)
 {

@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ecalloc.h"
+#include "ealloc.h"
 
 typedef struct strbuffer {
 	size_t capacity;

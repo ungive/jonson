@@ -8,7 +8,6 @@
 #define JONSON_OBJECT_H
 
 #include "jonson.h"
-#include "ecalloc.h"
 
 struct json_bucket {
 	char *key;

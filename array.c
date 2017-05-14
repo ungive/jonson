@@ -32,30 +32,30 @@ void json_array_reserve(struct json_array *array, size_t size)
 	if (size <= array->capacity)
 		return;
 
-	struct json *data = ecalloc(size, sizeof(struct json));
-
 	if (array->data) {
-		size_t i;
-		for (i = 0; i < array->capacity; ++i)
-			data[i] = array->data[i];
+		size_t diff = size - array->capacity;
+		array->data = erealloc(array->data, size, sizeof(struct json));
+		memset(array->data + size, 0, diff * sizeof(struct json));
 	}
-	free(array->data);
+	else {
+		array->data = ecalloc(size, sizeof(struct json));
+	}
 
-	array->data = data;
 	array->capacity = size;
 }
 
 void json_array_resize(struct json_array *array, size_t size)
 {
-	if (size >= array->size)
-		json_array_reserve(array, size);
-	else {
+	if (size < array->size) {
 		size_t i;
 		struct json *end = array->data + size;
 		for (i = 0; i < size; ++i)
 			json_free(end[i]);
 		memset(end, 0, array->size - size);
 		array->size = size;
+	}
+	else {
+		json_array_reserve(array, size);
 	}
 }
 

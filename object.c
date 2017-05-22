@@ -9,6 +9,15 @@
 #include "config.h"
 #include "jonson.h"
 
+uint32_t json_hash(const char *str)
+{
+	uint32_t hash = 5381;
+	char c;
+	while ((c = *str++))
+		hash = ((hash << 5) + hash) + c;
+	return hash;
+}
+
 uint32_t json_hashn(const char *str, size_t size)
 {
 	uint32_t hash = 5381;
@@ -45,28 +54,20 @@ void json_object_reserve(struct json_object *object, size_t size)
 	if (size <= object->capacity)
 		return;
 
-	struct json_bucket **buckets = object->buckets;
-	struct json_bucket *current = object->order_first;
-
-	object->buckets = ecalloc(size, sizeof(struct json_bucket *));
-	object->order_first = NULL;
-	object->order_last = &object->order_first;
 	object->capacity = size;
-	object->size = 0;
+	object->buckets = erealloc(object->buckets, size, sizeof(struct json_bucket *));
+	memset(object->buckets, 0, size * sizeof(struct json_bucket *));
 
+	struct json_bucket *current = object->order_first;
 	while (current) {
-		struct json_bucket *next = current->order_next;
-		json_object_set(object, current->key, current->value);
-		free(current->key);
-		free(current);
-		current = next;
+		size_t index = json_hash(current->key) % object->capacity;
+		current->next = object->buckets[index];
+		object->buckets[index] = current;
+		current = current->order_next;
 	}
-	free(buckets);
 }
 
-static int json_strneq(register const char *str1,
-		       register const char *str2,
-		       size_t num)
+static int json_strneq(const char *str1, const char *str2, size_t num)
 {
 	while (*str1++ == *str2)
 		if (!*str2++ || --num == 0)
@@ -126,7 +127,7 @@ struct json json_object_getn(struct json_object *object,
 	size_t index = json_hashn(key, key_size) % object->capacity;
 
 	struct json_bucket *current = object->buckets[index];
-	for (; current; current = current->order_next)
+	for (; current; current = current->next)
 		if (json_strneq(current->key, key, key_size))
 			return current->value;
 

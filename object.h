@@ -30,7 +30,7 @@ struct json_object {
  * Hash function created by Daniel J. Bernstein.
  */
 uint32_t json_hashn(const char *str, size_t size);
-#define json_hash(str) json_hashn(str, (str) ? strlen(str) : 0)
+uint32_t json_hash(const char *str);
 
 struct json_object *json_object_new(void);
 

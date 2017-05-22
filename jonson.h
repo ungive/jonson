@@ -58,17 +58,6 @@ void json_free(struct json value);
 char *json_serialise(struct json value);
 #define json_serialize(value) json_serialise(value)
 
-/*
- * Parses a JSON string and converts it into a [struct json].
- * If 'out_error_position' is set to a positive value, an unexpected token
- * was encountered at that position, or, if it equals the size of the string,
- * the JSON string ended unexpectedly.
- */
-signed long long json_parsen(const char *json, size_t size, struct json *out);
-#define json_parse(json, out) json_parsen(json, (json) ? strlen(json) : 0, out)
-
-signed long long json_parsen2(const char *json, size_t size, struct json *out);
-
 static inline char *json_strndup(const char *str, size_t size)
 {
 	char *copy = emalloc(size + 1, sizeof(char));
@@ -81,7 +70,7 @@ static inline char *json_strndup(const char *str, size_t size)
  */
 #define JSON_STRN(data, size) \
 	((struct json){ .type = JSON_TYPE_STRING, \
-		   .value.string = json_strndup(data, size) })
+			.value.string = json_strndup(data, size) })
 #define JSON_STR(data) JSON_STRN(data, (data) ? strlen(data) : 0)
 #define JSON_NUM(data) ((struct json){ .type = JSON_TYPE_NUMBER, .value.number = data })
 #define JSON_BOOL(data) ((struct json){ .type = JSON_TYPE_BOOLEAN, .value.boolean = data })

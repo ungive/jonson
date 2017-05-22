@@ -110,3 +110,11 @@ size_t strbuffer_appendf(struct strbuffer *sb, const char *format, ...)
 
 	return sb->size - previous_size;
 }
+
+size_t strbuffer_append_char(struct strbuffer *sb, char c)
+{
+	if (sb->size >= sb->capacity)
+		strbuffer_reserve(sb, (sb->size + 1) << 1);
+	sb->buffer[sb->size++] = c;
+	return 1;
+}

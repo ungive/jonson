@@ -64,11 +64,7 @@ size_t strbuffer_insert_char(struct strbuffer *sb, size_t index, char c)
 	return strbuffer_insertn(sb, index, &c, 1);
 }
 
-static inline
-size_t strbuffer_append_char(struct strbuffer *sb, char c)
-{
-	return strbuffer_appendn(sb, &c, 1);
-}
+size_t strbuffer_append_char(struct strbuffer *sb, char c);
 
 size_t strbuffer_insert_int(struct strbuffer *sb, size_t index,
 			    unsigned long long num);

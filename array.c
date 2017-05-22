@@ -32,14 +32,10 @@ void json_array_reserve(struct json_array *array, size_t size)
 	if (size <= array->capacity)
 		return;
 
-	if (array->data) {
-		size_t diff = size - array->capacity;
+	if (array->data)
 		array->data = erealloc(array->data, size, sizeof(struct json));
-		memset(array->data + size, 0, diff * sizeof(struct json));
-	}
-	else {
+	else
 		array->data = ecalloc(size, sizeof(struct json));
-	}
 
 	array->capacity = size;
 }

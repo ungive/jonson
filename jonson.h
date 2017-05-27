@@ -1,4 +1,4 @@
-/* Copyright (c) 2017 Jonas Berg <jonas.vanen@gmail.com>
+/* Copyright (c) 2017 Jonas van den Berg <jonas.vanen@gmail.com>
  * 
  * Jonson is free software; you can redistribute it and/or modify
  * it under the terms of the MIT license. See LICENSE for details.

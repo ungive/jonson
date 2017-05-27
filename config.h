@@ -4,7 +4,7 @@
  * it under the terms of the MIT license. See LICENSE for details.
  */
 
-##ifndef JONSON_CONFIG_H
+#ifndef JONSON_CONFIG_H
 #define JONSON_CONFIG_H
 
 #define JSON_OBJECT_INITIAL_LOAD_FACTOR 0.75f

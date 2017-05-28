@@ -34,7 +34,6 @@ struct json_stream {
 	struct json_token token;
 	struct {
 		double value;
-		double fraction; /* < REMOVE THIS! */
 		unsigned int exponent;
 		unsigned int precision;
 	} number;

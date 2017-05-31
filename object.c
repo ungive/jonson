@@ -4,8 +4,6 @@
  * it under the terms of the MIT license. See LICENSE for details.
  */
 
-#include <stdlib.h>
-
 #include "object.h"
 
 #define INIT_LOAD_FACTOR 0.5f
@@ -37,9 +35,9 @@ uint32_t json_hashn(const char *str, size_t size)
 
 struct json_object *json_object_new(void)
 {
-	struct json_object *object = malloc(1, sizeof(struct json_object));
+	struct json_object *object = malloc(sizeof(struct json_object));
 	if (!object)
-		return NULL;
+		goto error_object;
 
 	object->load_factor = INIT_LOAD_FACTOR;
 	object->capacity = INIT_CAPACITY;
@@ -47,13 +45,20 @@ struct json_object *json_object_new(void)
 
 	object->buckets = calloc(object->capacity, sizeof(struct json_bucket));
 	if (!object->buckets)
-		return NULL;
+		goto error_buckets;
 
-	object->order = malloc(object->capacity, sizeof(size_t));
+	object->order = malloc(object->capacity * sizeof(size_t));
 	if (!object->order)
-		return NULL;
+		goto error_order;
 
 	return object;
+
+error_order:
+	free(object->buckets);
+error_buckets:
+	free(object);
+error_object:
+	return NULL;
 }
 
 void json_object_free(struct json_object *object)
@@ -68,17 +73,17 @@ void json_object_free(struct json_object *object)
 int json_object_reserve(struct json_object *object, size_t size)
 {
 	if (size <= object->capacity)
-		return 0;
+		return 1;
 
 	struct json_bucket *buckets = object->buckets;
 
 	object->buckets = calloc(size, sizeof(struct json_bucket));
 	if (!object->buckets)
-		return 0;
+		goto error_buckets;
 
 	object->order = realloc(object->order, size * sizeof(size_t));
 	if (!object->order)
-		return 0;
+		goto error_order;
 
 	for (size_t i = 0; i < object->size; ++i) {
 		struct json_bucket *bucket = buckets + object->order[i];
@@ -98,6 +103,12 @@ int json_object_reserve(struct json_object *object, size_t size)
 	object->capacity = size;
 	free(buckets);
 	return 1;
+
+error_order:
+	free(object->buckets);
+error_buckets:
+	object->buckets = buckets;
+	return 0;
 }
 
 int json_object_set_n(struct json_object *object, const char *key,

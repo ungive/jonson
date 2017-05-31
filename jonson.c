@@ -6,15 +6,16 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "jonson.h"
 #include "object.h"
 #include "array.h"
-#include "token.h"
+// #include "token.h"
 #include "strbuffer.h"
-#include "stack.h"
+// #include "stack.h"
 
-struct json json_build(JSON_TYPE type, ...)
+struct json json_build(enum json_type type, ...)
 {
 	struct json result;
 
@@ -112,17 +113,20 @@ char *json_serialise(struct json value)
 		struct json_object *object = JSON_OBJVAL(value);
 		strbuffer_append_char(sb, '{');
 
-		struct json_bucket *current = object->order_first;
-		while (current) {
-			char *val = json_serialise(current->value);
+		for (size_t i = 0; i < object->size; ++i) {
+			struct json_bucket *bucket = object->buckets + object->order[i];
+			char *value = json_serialise(bucket->value);
+			char *key = bucket->key;
+
 			strbuffer_append_char(sb, '"');
-			strbuffer_append(sb, current->key);
+			strbuffer_append(sb, key);
 			strbuffer_append_char(sb, '"');
 			strbuffer_append_char(sb, ':');
-			strbuffer_append(sb, val);
-			free(val);
-			if ((current = current->order_next))
+			strbuffer_append(sb, value);
+			if (i < object->size - 1)
 				strbuffer_append_char(sb, ',');
+
+			free(value);
 		}
 
 		strbuffer_append_char(sb, '}');

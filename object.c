@@ -6,8 +6,7 @@
 
 #include <stdlib.h>
 
-#include "config.h"
-#include "jonson.h"
+#include "object.h"
 
 #define INIT_LOAD_FACTOR 0.5f
 #define INIT_CAPACITY    16
@@ -38,12 +37,22 @@ uint32_t json_hashn(const char *str, size_t size)
 
 struct json_object *json_object_new(void)
 {
-	struct json_object *object = emalloc(1, sizeof(struct json_object));
+	struct json_object *object = malloc(1, sizeof(struct json_object));
+	if (!object)
+		return NULL;
+
 	object->load_factor = INIT_LOAD_FACTOR;
 	object->capacity = INIT_CAPACITY;
-	object->buckets = ecalloc(object->capacity, sizeof(struct json_bucket));
-	object->order = emalloc(object->capacity, sizeof(size_t));
 	object->size = 0;
+
+	object->buckets = calloc(object->capacity, sizeof(struct json_bucket));
+	if (!object->buckets)
+		return NULL;
+
+	object->order = malloc(object->capacity, sizeof(size_t));
+	if (!object->order)
+		return NULL;
+
 	return object;
 }
 
@@ -105,6 +114,7 @@ int json_object_set_n(struct json_object *object, const char *key,
 
 		if (bucket->key) {
 			if (strncmp(bucket->key, key, key_size) == 0) {
+				json_free(bucket->value);
 				bucket->value = value;
 				return 1;
 			}
@@ -136,7 +146,7 @@ struct json json_object_get_n(struct json_object *object,
 	}
 }
 
-enum JSON_TYPE json_object_try_get_n(struct json_object *object, const char *key,
+enum json_type json_object_try_get_n(struct json_object *object, const char *key,
                                      size_t key_size, struct json *out_value)
 {
 	struct json value = json_object_get_n(object, key, key_size);

@@ -11,23 +11,20 @@ endif
 
 OUTDIR  = ../
 LIBDIR  = $(OUTDIR)lib/
-INCLUDE = $(OUTDIR)include/jonson/
-HEADERS = jonson.h object.h array.h token.h ealloc.h
 
 LIB = $(LIBDIR)libjonson.a
-OBJ = jonson.o object.o array.o token.o ealloc.o strbuffer.o stack.o
+OBJ = jonson.o object.o array.o stream.o token.o ealloc.o strbuffer.o stack.o \
+	chain/chain.o
 
 all: lib
 	echo $(CFLAGS)
 
 lib: $(OBJ)
-	mkdir -p $(OUTDIR) $(LIBDIR) $(INCLUDE)
+	mkdir -p $(OUTDIR) $(LIBDIR)
 	ar rcs $(LIB) $(OBJ)
-	cp -f $(HEADERS) $(INCLUDE)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	rm -rf $(LIB) $(OBJ)
-	rm -rf $(addprefix $(INCLUDE), $(HEADERS))

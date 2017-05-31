@@ -23,7 +23,7 @@ union json_value {
 	struct json_array *array;
 };
 
-typedef enum JSON_TYPE {
+enum json_type {
 	JSON_TYPE_NONE,
 	JSON_TYPE_NULL,
 	JSON_TYPE_STRING,
@@ -31,14 +31,14 @@ typedef enum JSON_TYPE {
 	JSON_TYPE_BOOLEAN,
 	JSON_TYPE_OBJECT,
 	JSON_TYPE_ARRAY
-} JSON_TYPE;
+};
 
 /*
  * Use the type to interpret the value correctly.
  */
 struct json {
 	union json_value value;
-	enum JSON_TYPE type;
+	enum json_type type;
 };
 
 /*
@@ -47,7 +47,7 @@ struct json {
  * no other can be nested or would be simpler to create with this function
  * (use the macros defined at the bottom of this header instead).
  */
-struct json json_build(JSON_TYPE type, ...);
+struct json json_build(enum json_type type, ...);
 
 void json_free(struct json value);
 
@@ -60,7 +60,7 @@ char *json_serialise(struct json value);
 
 static inline char *json_strndup(const char *str, size_t size)
 {
-	char *copy = emalloc(size + 1, sizeof(char));
+	char *copy = malloc((size + 1) * sizeof(char));
 	copy[size] = 0;
 	return memcpy(copy, str, size * sizeof(char));
 }

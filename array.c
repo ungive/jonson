@@ -6,15 +6,16 @@
 
 #include <stdlib.h>
 
-#include "config.h"
-#include "jonson.h"
+#include "array.h"
+
+#define INIT_CAPACITY 16
 
 struct json_array *json_array_new(void)
 {
 	struct json_array *array = emalloc(1, sizeof(struct json_array));
-	array->data = ecalloc(JSON_ARRAY_INITIAL_CAPACITY, sizeof(struct json));
-	array->capacity = JSON_ARRAY_INITIAL_CAPACITY;
+	array->capacity = INIT_CAPACITY;
 	array->size = 0;
+	array->data = ecalloc(array->capacity, sizeof(struct json));
 	return array;
 }
 

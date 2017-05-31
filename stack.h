@@ -21,7 +21,8 @@ struct json_stack {
 
 static inline struct json_stack *json_stack_new(void)
 {
-	return ecalloc(1, sizeof(struct json_stack));
+	struct json_stack *stack = calloc(1, sizeof(struct json_stack));
+	return stack ? stack : NULL;
 }
 
 void json_stack_free(struct json_stack *stack, int plates);

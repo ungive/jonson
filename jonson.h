@@ -7,10 +7,9 @@
 #ifndef JONSON_H
 #define JONSON_H
 
-#include <stdint.h>
+#include <stddef.h>
+#include <stdlib.h>
 #include <string.h>
-
-#include "ealloc.h"
 
 struct json_object;
 struct json_array;

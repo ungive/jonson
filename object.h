@@ -7,9 +7,9 @@
 #ifndef JONSON_OBJECT_H
 #define JONSON_OBJECT_H
 
-#include <stdint.h>
-
 #include "jonson.h"
+
+#include <stdint.h>
 
 struct json_bucket {
 	char *key;
